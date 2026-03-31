@@ -11,15 +11,16 @@ export default function AnimatedBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let particlesArray: Particle[] = [];
     let w = (canvas.width = window.innerWidth);
     let h = (canvas.height = window.innerHeight);
+    let stars: Star[] = [];
 
-    // Mouse tracking sin estados de React (para 60fps impecables)
+    // Mouse tracking for subtle parallax
     const mouse = {
-      x: -1000,
-      y: -1000,
-      radius: 120, // Zona de interacción con los puntos
+      x: w / 2,
+      y: h / 2,
+      targetX: w / 2,
+      targetY: h / 2
     };
 
     const handleResize = () => {
@@ -29,114 +30,282 @@ export default function AnimatedBackground() {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
-
-    const handleMouseOut = () => {
-      mouse.x = -1000;
-      mouse.y = -1000;
+      mouse.targetX = e.clientX;
+      mouse.targetY = e.clientY;
     };
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseout", handleMouseOut);
 
-    class Particle {
+    class Star {
       x: number;
       y: number;
+      z: number;
+      originZ: number;
+      isPaleBlueDot: boolean;
       size: number;
-      speedX: number;
-      speedY: number;
-      opacity: number;
+      twinkleSpeed: number;
+      twinklePhase: number;
 
-      constructor() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.size = Math.random() * 1.5 + 0.2;
-        this.speedX = (Math.random() - 0.5) * 0.25;
-        this.speedY = (Math.random() - 0.5) * 0.25;
-        this.opacity = Math.random() * 0.5 + 0.1;
+      constructor(isPaleBlueDot = false) {
+        this.x = (Math.random() - 0.5) * w * 3.5;
+        this.y = (Math.random() - 0.5) * h * 3.5;
+        this.z = isPaleBlueDot ? 50 : Math.random() * 2000;
+        if (isPaleBlueDot) {
+          this.x = (Math.random() - 0.5) * w * 0.4;
+          this.y = (Math.random() - 0.5) * h * 0.4;
+        }
+        this.originZ = this.z;
+        this.isPaleBlueDot = isPaleBlueDot;
+        this.size = Math.random() * 1.8 + 0.2;
+        this.twinkleSpeed = Math.random() * 0.05 + 0.01;
+        this.twinklePhase = Math.random() * Math.PI * 2;
       }
-      
+
       update() {
-        // Movimiento natural
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        if (this.x < 0 || this.x > w) this.speedX *= -1;
-        if (this.y < 0 || this.y > h) this.speedY *= -1;
-
-        // FÍSICA: Interactividad con el mouse (Repulsión)
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < mouse.radius) {
-          const forceDirectionX = dx / distance;
-          const forceDirectionY = dy / distance;
-          const force = (mouse.radius - distance) / mouse.radius;
-          const directionX = forceDirectionX * force * 2;
-          const directionY = forceDirectionY * force * 2;
-
-          // Si el mouse se acerca, empuja las partículas suavemente
-          this.x -= directionX;
-          this.y -= directionY;
+        this.z += 1.5;
+        this.twinklePhase += this.twinkleSpeed;
+        if (this.z > 2000) {
+          if (!this.isPaleBlueDot) {
+            this.z = 1;
+            this.x = (Math.random() - 0.5) * w * 3.5;
+            this.y = (Math.random() - 0.5) * h * 3.5;
+          }
         }
       }
-      
-      draw() {
+
+      draw(centerX: number, centerY: number) {
         if (!ctx) return;
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        const fov = 350;
+        const scale = fov / (fov + this.z);
+        const projectedX = centerX + this.x * scale;
+        const projectedY = centerY + this.y * scale;
+
+        const twinkle = Math.sin(this.twinklePhase) * 0.3 + 0.7;
+        const size = Math.max(0.1, this.size * scale * (this.isPaleBlueDot ? 2.5 : 1));
+        const opacity = Math.max(0, (1 - (this.z / 2000)) * (this.isPaleBlueDot ? 1 : twinkle));
+
+        if (this.isPaleBlueDot) {
+          ctx.fillStyle = `rgba(130, 180, 255, ${opacity * 1.5})`; 
+          const glow = ctx.createRadialGradient(projectedX, projectedY, 0, projectedX, projectedY, size * 6);
+          glow.addColorStop(0, `rgba(130, 180, 255, ${opacity * 0.8})`);
+          glow.addColorStop(1, "rgba(130, 180, 255, 0)");
+          ctx.beginPath();
+          ctx.arc(projectedX, projectedY, size * 6, 0, Math.PI * 2);
+          ctx.fillStyle = glow;
+          ctx.fill();
+        } else {
+          ctx.fillStyle = `rgba(200, 210, 230, ${opacity * 0.8})`;
+        }
+
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.arc(projectedX, projectedY, size, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
-    function init() {
-      particlesArray = [];
-      const numberOfParticles = (w * h) / 7500;
-      for (let i = 0; i < numberOfParticles; i++) {
-        particlesArray.push(new Particle());
+    class CelestialAnomaly {
+      x: number;
+      y: number;
+      z: number;
+      type: 'black_hole' | 'quasar' | 'nebula' | 'star_sun';
+      active: boolean;
+      pulse: number;
+
+      constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.z = 2000;
+        this.type = 'black_hole';
+        this.active = false;
+        this.pulse = 0;
+        this.reset();
+      }
+
+      reset() {
+        this.x = (Math.random() - 0.5) * w * 2.8; 
+        this.y = (Math.random() - 0.5) * h * 2.8;
+        this.z = 5;
+        const types = ['black_hole', 'quasar', 'nebula', 'star_sun'];
+        this.type = types[Math.floor(Math.random() * types.length)] as any;
+        this.active = Math.random() < 0.25;
+        this.pulse = Math.random() * Math.PI * 2;
+      }
+
+      update() {
+        if (!this.active) {
+          if (Math.random() < 0.0006) {
+            this.reset();
+            this.active = true;
+          }
+          return;
+        }
+        this.z += 1.5;
+        this.pulse += 0.03;
+        if (this.z > 2000) this.active = false;
+      }
+
+      draw(centerX: number, centerY: number) {
+        if (!this.active || !ctx) return;
+
+        const fov = 350;
+        const scale = fov / (fov + this.z);
+        const projectedX = centerX + this.x * scale;
+        const projectedY = centerY + this.y * scale;
+
+        const baseSize = Math.max(0.1, 75 * scale);
+        const opacity = Math.max(0, 1 - (this.z / 1600));
+        const fadeOpacity = Math.pow(opacity, 1.8);
+        const animationPulse = Math.sin(this.pulse) * 0.05 + 1;
+
+        if (this.type === 'black_hole') {
+          // HD Black Hole - Gargantua Style
+          // Layer 1: Outer glowing haze
+          const hazeGrad = ctx.createRadialGradient(projectedX, projectedY, baseSize * 0.9, projectedX, projectedY, baseSize * 3.5);
+          hazeGrad.addColorStop(0, `rgba(255, 120, 30, ${fadeOpacity * 0.2})`);
+          hazeGrad.addColorStop(1, "rgba(255, 60, 0, 0)");
+          ctx.fillStyle = hazeGrad;
+          ctx.beginPath();
+          ctx.arc(projectedX, projectedY, baseSize * 3.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Layer 2: Accretion Disk - Multi-layered ellipses
+          for(let i=0; i<3; i++) {
+            ctx.beginPath();
+            const diskScale = 1 - (i * 0.15);
+            ctx.ellipse(projectedX, projectedY, baseSize * 2.5 * diskScale * animationPulse, baseSize * 0.35 * diskScale, 0.15, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, ${150 - i*30}, ${30 + i*10}, ${fadeOpacity * (0.6 - i*0.1)})`;
+            ctx.fill();
+          }
+
+          // Layer 3: Einstein Ring - Ultra-sharp light photon sphere
+          ctx.beginPath();
+          ctx.arc(projectedX, projectedY, baseSize * 1.08, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 255, 230, ${fadeOpacity * 0.9})`;
+          ctx.lineWidth = 1.2 * scale;
+          ctx.stroke();
+
+          // Event Horizon - Dense shadow core
+          ctx.beginPath();
+          ctx.arc(projectedX, projectedY, baseSize, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(5, 5, 10, ${fadeOpacity * 1.8})`;
+          ctx.fill();
+
+        } else if (this.type === 'quasar') {
+          // HD Quasar - Pulsating Energy
+          const jetLen = baseSize * 18 * animationPulse;
+          const jetGrad = ctx.createLinearGradient(projectedX, projectedY - jetLen, projectedX, projectedY + jetLen);
+          jetGrad.addColorStop(0, "rgba(120, 80, 255, 0)");
+          jetGrad.addColorStop(0.5, `rgba(220, 200, 255, ${fadeOpacity * 0.8})`);
+          jetGrad.addColorStop(1, "rgba(120, 80, 255, 0)");
+          
+          ctx.beginPath();
+          ctx.moveTo(projectedX - baseSize * 0.2, projectedY);
+          ctx.lineTo(projectedX, projectedY - jetLen);
+          ctx.lineTo(projectedX + baseSize * 0.2, projectedY);
+          ctx.lineTo(projectedX, projectedY + jetLen);
+          ctx.fillStyle = jetGrad;
+          ctx.fill();
+
+          // Core Fusion
+          const coreGrad = ctx.createRadialGradient(projectedX, projectedY, 0, projectedX, projectedY, baseSize * 0.8);
+          coreGrad.addColorStop(0, `rgba(255, 255, 255, ${fadeOpacity * 1.5})`);
+          coreGrad.addColorStop(1, "rgba(220, 200, 255, 0)");
+          ctx.fillStyle = coreGrad;
+          ctx.beginPath();
+          ctx.arc(projectedX, projectedY, baseSize * 0.8, 0, Math.PI * 2);
+          ctx.fill();
+
+        } else if (this.type === 'star_sun') {
+          // New Star / Sun HD
+          const sunSize = baseSize * 1.2;
+          // Corona - Turbulent halo
+          const coronaPulse = Math.sin(this.pulse * 1.5) * 0.08 + 1;
+          const coronaGrad = ctx.createRadialGradient(projectedX, projectedY, sunSize * 0.5 * coronaPulse, projectedX, projectedY, sunSize * 4 * coronaPulse);
+          coronaGrad.addColorStop(0, `rgba(255, 250, 200, ${fadeOpacity * 0.5})`);
+          coronaGrad.addColorStop(0.5, `rgba(255, 180, 40, ${fadeOpacity * 0.15})`);
+          coronaGrad.addColorStop(1, "rgba(255, 80, 0, 0)");
+          ctx.fillStyle = coronaGrad;
+          ctx.beginPath();
+          ctx.arc(projectedX, projectedY, sunSize * 4 * coronaPulse, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Fusion Core - Soft white/gold
+          const fusionGrad = ctx.createRadialGradient(projectedX, projectedY, 0, projectedX, projectedY, sunSize);
+          fusionGrad.addColorStop(0, `rgba(255, 255, 250, ${fadeOpacity * 1.5})`);
+          fusionGrad.addColorStop(1, `rgba(255, 220, 100, ${fadeOpacity * 0.2})`);
+          ctx.fillStyle = fusionGrad;
+          ctx.beginPath();
+          ctx.arc(projectedX, projectedY, sunSize, 0, Math.PI * 2);
+          ctx.fill();
+
+        } else if (this.type === 'nebula') {
+          // HD Nebula - Soft Cloud Gradients
+          const nebSize = baseSize * 22;
+          const nebGrad = ctx.createRadialGradient(projectedX, projectedY, 0, projectedX, projectedY, nebSize);
+          nebGrad.addColorStop(0, `rgba(80, 120, 255, ${fadeOpacity * 0.06})`);
+          nebGrad.addColorStop(0.4, `rgba(180, 100, 255, ${fadeOpacity * 0.03})`);
+          nebGrad.addColorStop(0.7, `rgba(60, 40, 150, ${fadeOpacity * 0.01})`);
+          nebGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+          ctx.fillStyle = nebGrad;
+          ctx.beginPath();
+          ctx.arc(projectedX, projectedY, nebSize, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
 
-    // FÍSICA: Conectar los puntos si están lo suficientemente cerca
-    function connect() {
-      if (!ctx) return;
-      let opacityValue = 1;
-      for (let a = 0; a < particlesArray.length; a++) {
-        for (let b = a; b < particlesArray.length; b++) {
-          const dx = particlesArray[a].x - particlesArray[b].x;
-          const dy = particlesArray[a].y - particlesArray[b].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+    let anomalies: CelestialAnomaly[] = [];
 
-          if (distance < 110) {
-            opacityValue = 1 - distance / 110;
-            ctx.strokeStyle = `rgba(255, 255, 255, ${opacityValue * 0.2})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-            ctx.stroke();
-          }
-        }
+    function init() {
+      stars = [];
+      const numStars = Math.min((w * h) / 900, 1500); 
+      for (let i = 0; i < numStars; i++) {
+        stars.push(new Star());
+      }
+      // Instanciar el único punto azul pálido
+      stars.push(new Star(true));
+
+      // Instanciar las anomalías cósmicas masivas y raras
+      anomalies = [];
+      for(let i=0; i<3; i++) {
+        anomalies.push(new CelestialAnomaly());
       }
     }
 
     let animationFrameId: number;
     function animate() {
       if (!ctx) return;
-      ctx.clearRect(0, 0, w, h);
       
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-        particlesArray[i].draw();
+      // Limpiamos con negro transparente para generar un micro-rastro que suaviza el movimiento
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.4)';
+      ctx.fillRect(0, 0, w, h);
+
+      // Parallax hiper-sutil para que el universo responda levísimamente al observador
+      mouse.x += (mouse.targetX - mouse.x) * 0.01;
+      mouse.y += (mouse.targetY - mouse.y) * 0.01;
+      
+      const centerX = w / 2 + (mouse.x - w / 2) * 0.02;
+      const centerY = h / 2 + (mouse.y - h / 2) * 0.02;
+
+      // El abismo central: un gradiente oscuro que simula que miremos a la nada infinita
+      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(w, h));
+      gradient.addColorStop(0, "rgba(5, 5, 5, 0.95)");
+      gradient.addColorStop(1, "transparent");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+
+      // Dibujar Anomalías primero para que queden debajo del polvo estelar ligero
+      for (let anomaly of anomalies) {
+        anomaly.update();
+        anomaly.draw(centerX, centerY);
       }
-      
-      connect(); // Dibuja la telaraña o red
-      
+
+      for (let i = 0; i < stars.length; i++) {
+        stars[i].update();
+        stars[i].draw(centerX, centerY);
+      }
+
       animationFrameId = requestAnimationFrame(animate);
     }
 
@@ -146,7 +315,6 @@ export default function AnimatedBackground() {
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseout", handleMouseOut);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -154,8 +322,10 @@ export default function AnimatedBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 z-0 pointer-events-none opacity-50 mix-blend-screen transition-opacity duration-1000"
+      className="fixed inset-0 z-0 opacity-100 mix-blend-screen transition-opacity duration-1000"
       aria-hidden="true"
     />
   );
 }
+
+
