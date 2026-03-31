@@ -3,23 +3,35 @@
     "id": "1",
     "name": "Barber Professional Hub",
     "description": "Plataforma experimental para servicios de barbería. Construida con el objetivo de aprender mejores patrones de UX y flujos de reserva.",
-    "tags": ["Vue.js", "UX", "Aprendizaje"],
-    "github": "https://github.com/JohnmaDev/barber-professional-hub",
+    "tags": [
+      "Vue.js",
+      "UX",
+      "Aprendizaje"
+    ],
+    "github": "https://github.com/JohnmaDev/PersonalBarber",
     "featured": true
   },
   {
     "id": "2",
     "name": "Productivity Flow",
     "description": "Exploración técnica de gestión de estados y productividad. Arquitectura inspirada en máquinas de estado para organizar tareas de forma estricta.",
-    "tags": ["TypeScript", "State Machines", "Curiosidad"],
-    "github": "https://github.com/JohnmaDev/productivity-orchestrator",
+    "tags": [
+      "TypeScript",
+      "State Machines",
+      "Curiosidad"
+    ],
+    "github": "https://github.com/JohnmaDev/to-do-list-vue",
     "featured": true
   },
   {
     "id": "3",
     "name": "Document TTS Reader",
     "description": "Experimento para entender el procesamiento eficiente de archivos estáticos. Convierte PDFs a audio usando bibliotecas de síntesis.",
-    "tags": ["Python", "Exploración", "Accesibilidad"],
+    "tags": [
+      "Python",
+      "Exploración",
+      "Accesibilidad"
+    ],
     "github": "https://github.com/JohnmaDev/pdf-to-mp3",
     "featured": true
   },
@@ -27,7 +39,10 @@
     "id": "4",
     "name": "Sistemas en Construcción",
     "description": "Explorando nuevas tecnologías en las sombras. Cada iteración es un ejercicio de arquitectura y diseño implacable.",
-    "tags": ["En desarrollo", "Hobbie"],
+    "tags": [
+      "En desarrollo",
+      "Hobbie"
+    ],
     "github": null,
     "featured": false,
     "comingSoon": true
