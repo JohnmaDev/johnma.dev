@@ -23,10 +23,21 @@ export default function AnimatedBackground() {
       targetY: h / 2
     };
 
+    let lastWidth = w;
     const handleResize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-      init();
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+      
+      // Si el cambio es solo de altura (típico de barra de navegación en móvil), no reiniciamos el estado
+      const widthChanged = Math.abs(newWidth - lastWidth) > 5;
+      
+      w = canvas.width = newWidth;
+      h = canvas.height = newHeight;
+      
+      if (widthChanged) {
+        lastWidth = newWidth;
+        init();
+      }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
