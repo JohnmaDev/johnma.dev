@@ -57,7 +57,7 @@ export default function AnimatedBackground() {
         }
         this.originZ = this.z;
         this.isPaleBlueDot = isPaleBlueDot;
-        this.size = Math.random() * 1.8 + 0.2;
+        this.size = Math.random() * 2.5 + 0.5;
         this.twinkleSpeed = Math.random() * 0.05 + 0.01;
         this.twinklePhase = Math.random() * Math.PI * 2;
       }
@@ -82,7 +82,7 @@ export default function AnimatedBackground() {
         const projectedY = centerY + this.y * scale;
 
         const twinkle = Math.sin(this.twinklePhase) * 0.3 + 0.7;
-        const size = Math.max(0.1, this.size * scale * (this.isPaleBlueDot ? 2.5 : 1));
+        const size = Math.max(0.4, this.size * scale * (this.isPaleBlueDot ? 2.5 : 1));
         const opacity = Math.max(0, (1 - (this.z / 2000)) * (this.isPaleBlueDot ? 1 : twinkle));
 
         if (this.isPaleBlueDot) {

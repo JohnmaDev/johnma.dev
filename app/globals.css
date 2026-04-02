@@ -132,7 +132,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Grid dot pattern for hero background */
 .dot-grid {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1.2px, transparent 1.2px);
   background-size: 32px 32px;
 }
 
