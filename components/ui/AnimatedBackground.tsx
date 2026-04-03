@@ -23,6 +23,7 @@ export default function AnimatedBackground() {
       targetY: h / 2
     };
 
+    // Optimized for mobile scroll experience
     let lastWidth = w;
     const handleResize = () => {
       const newWidth = window.innerWidth;
