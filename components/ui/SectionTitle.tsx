@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import React from "react";
 
 interface SectionTitleProps {
@@ -5,6 +6,7 @@ interface SectionTitleProps {
   title: string;
   description?: string;
   align?: "left" | "center";
+  className?: string;
 }
 
 export default function SectionTitle({
@@ -12,11 +14,16 @@ export default function SectionTitle({
   title,
   description,
   align = "left",
+  className,
 }: SectionTitleProps) {
-  const alignClass = align === "center" ? "text-center items-center" : "text-left items-start";
-
   return (
-    <div className={`flex flex-col gap-3 ${alignClass}`}>
+    <div
+      className={cn(
+        "flex flex-col gap-3",
+        align === "center" ? "text-center items-center" : "text-left items-start",
+        className
+      )}
+    >
       {eyebrow && (
         <span className="font-mono text-xs tracking-[0.18em] uppercase text-[var(--color-fg-subtle)]">
           {eyebrow}
