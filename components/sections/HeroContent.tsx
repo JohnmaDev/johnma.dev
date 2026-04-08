@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import AnimatedBackground from "@/components/ui/AnimatedBackground";
+import TypewriterEffect from "@/components/ui/TypewriterEffect";
 
 export default function HeroContent() {
   return (
@@ -25,8 +26,13 @@ export default function HeroContent() {
       <div className="container-content relative z-10 flex flex-col items-center justify-center text-center">
         {/* Main profile identity - Abstraction pure */}
         <div className="flex flex-col gap-10 items-center animate-fade-in [animation-duration:2000ms]">
-          <h1 className="text-5xl sm:text-7xl lg:text-9xl font-bold tracking-tighter text-[var(--color-fg)] opacity-90 blur-[0.3px]">
-            Johnma.
+          <h1 className="text-5xl sm:text-7xl lg:text-9xl font-bold tracking-tighter text-[var(--color-fg)] opacity-90 blur-[0.3px] min-h-[1.2em]">
+            <TypewriterEffect 
+              words={["Johnma.", "Next.js.", "React.", "TypeScript.", "Arquitectura."]} 
+              typingSpeed={100}
+              deletingSpeed={50}
+              delayBetweenWords={2500}
+            />
           </h1>
 
           {/* Minimalist CTAs */}
