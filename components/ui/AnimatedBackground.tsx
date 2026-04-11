@@ -15,7 +15,7 @@ export default function AnimatedBackground() {
     let h = (canvas.height = window.innerHeight);
     let stars: Star[] = [];
 
-    // Mouse tracking for subtle parallax
+    // Seguimiento del mouse para un efecto parallax sutil
     const mouse = {
       x: w / 2,
       y: h / 2,
@@ -23,9 +23,13 @@ export default function AnimatedBackground() {
       targetY: h / 2
     };
 
-    // Optimized for mobile scroll experience
+    // Optimizado para la experiencia de scroll en dispositivos móviles
     let lastWidth = w;
-    const handleResize = () => {
+    
+    /**
+     * Maneja el cambio de tamaño de la ventana.
+     */
+    const handleResize = (): void => {
       const newWidth = window.innerWidth;
       const newHeight = window.innerHeight;
       
@@ -41,7 +45,10 @@ export default function AnimatedBackground() {
       }
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
+    /**
+     * Maneja el movimiento del mouse.
+     */
+    const handleMouseMove = (e: MouseEvent): void => {
       mouse.targetX = e.clientX;
       mouse.targetY = e.clientY;
     };
@@ -49,6 +56,9 @@ export default function AnimatedBackground() {
     window.addEventListener("resize", handleResize);
     window.addEventListener("mousemove", handleMouseMove);
 
+    /**
+     * Clase que representa una estrella en el fondo animado.
+     */
     class Star {
       x: number;
       y: number;
@@ -59,14 +69,16 @@ export default function AnimatedBackground() {
       twinkleSpeed: number;
       twinklePhase: number;
 
-      constructor(isPaleBlueDot = false) {
+      constructor(isPaleBlueDot: boolean = false) {
         this.x = (Math.random() - 0.5) * w * 3.5;
         this.y = (Math.random() - 0.5) * h * 3.5;
         this.z = isPaleBlueDot ? 50 : Math.random() * 2000;
+        
         if (isPaleBlueDot) {
           this.x = (Math.random() - 0.5) * w * 0.4;
           this.y = (Math.random() - 0.5) * h * 0.4;
         }
+        
         this.originZ = this.z;
         this.isPaleBlueDot = isPaleBlueDot;
         this.size = Math.random() * 2.5 + 0.5;
@@ -74,9 +86,13 @@ export default function AnimatedBackground() {
         this.twinklePhase = Math.random() * Math.PI * 2;
       }
 
-      update() {
+      /**
+       * Actualiza la posición y el estado de la estrella.
+       */
+      update(): void {
         this.z += 1.5;
         this.twinklePhase += this.twinkleSpeed;
+        
         if (this.z > 2000) {
           if (!this.isPaleBlueDot) {
             this.z = 1;
@@ -86,8 +102,12 @@ export default function AnimatedBackground() {
         }
       }
 
-      draw(centerX: number, centerY: number) {
+      /**
+       * Dibuja la estrella en el canvas.
+       */
+      draw(centerX: number, centerY: number): void {
         if (!ctx) return;
+        
         const fov = 350;
         const scale = fov / (fov + this.z);
         const projectedX = centerX + this.x * scale;
@@ -102,6 +122,7 @@ export default function AnimatedBackground() {
           const glow = ctx.createRadialGradient(projectedX, projectedY, 0, projectedX, projectedY, size * 6);
           glow.addColorStop(0, `rgba(130, 180, 255, ${opacity * 0.8})`);
           glow.addColorStop(1, "rgba(130, 180, 255, 0)");
+          
           ctx.beginPath();
           ctx.arc(projectedX, projectedY, size * 6, 0, Math.PI * 2);
           ctx.fillStyle = glow;
@@ -116,11 +137,19 @@ export default function AnimatedBackground() {
       }
     }
 
+    /**
+     * Tipos de anomalías celestiales disponibles.
+     */
+    type AnomalyType = 'black_hole' | 'quasar' | 'nebula' | 'star_sun';
+
+    /**
+     * Clase que representa una anomalía celestial masiva (agujeros negros, cuásares, etc.).
+     */
     class CelestialAnomaly {
       x: number;
       y: number;
       z: number;
-      type: 'black_hole' | 'quasar' | 'nebula' | 'star_sun';
+      type: AnomalyType;
       active: boolean;
       pulse: number;
 
@@ -134,17 +163,23 @@ export default function AnimatedBackground() {
         this.reset();
       }
 
-      reset() {
+      /**
+       * Reinicia el estado de la anomalía.
+       */
+      reset(): void {
         this.x = (Math.random() - 0.5) * w * 2.8; 
         this.y = (Math.random() - 0.5) * h * 2.8;
         this.z = 5;
-        const types = ['black_hole', 'quasar', 'nebula', 'star_sun'];
-        this.type = types[Math.floor(Math.random() * types.length)] as any;
+        const types: AnomalyType[] = ['black_hole', 'quasar', 'nebula', 'star_sun'];
+        this.type = types[Math.floor(Math.random() * types.length)];
         this.active = Math.random() < 0.25;
         this.pulse = Math.random() * Math.PI * 2;
       }
 
-      update() {
+      /**
+       * Actualiza el estado de la anomalía.
+       */
+      update(): void {
         if (!this.active) {
           if (Math.random() < 0.0006) {
             this.reset();
@@ -157,7 +192,10 @@ export default function AnimatedBackground() {
         if (this.z > 2000) this.active = false;
       }
 
-      draw(centerX: number, centerY: number) {
+      /**
+       * Dibuja la anomalía en el canvas.
+       */
+      draw(centerX: number, centerY: number): void {
         if (!this.active || !ctx) return;
 
         const fov = 350;
@@ -171,8 +209,8 @@ export default function AnimatedBackground() {
         const animationPulse = Math.sin(this.pulse) * 0.05 + 1;
 
         if (this.type === 'black_hole') {
-          // HD Black Hole - Gargantua Style
-          // Layer 1: Outer glowing haze
+          // Agujero Negro HD - Estilo Gargantua
+          // Capa 1: Bruma luminosa exterior
           const hazeGrad = ctx.createRadialGradient(projectedX, projectedY, baseSize * 0.9, projectedX, projectedY, baseSize * 3.5);
           hazeGrad.addColorStop(0, `rgba(255, 120, 30, ${fadeOpacity * 0.2})`);
           hazeGrad.addColorStop(1, "rgba(255, 60, 0, 0)");
@@ -181,7 +219,7 @@ export default function AnimatedBackground() {
           ctx.arc(projectedX, projectedY, baseSize * 3.5, 0, Math.PI * 2);
           ctx.fill();
 
-          // Layer 2: Accretion Disk - Multi-layered ellipses
+          // Capa 2: Disco de Acreción - Elipses multicapa
           for(let i=0; i<3; i++) {
             ctx.beginPath();
             const diskScale = 1 - (i * 0.15);
@@ -190,21 +228,21 @@ export default function AnimatedBackground() {
             ctx.fill();
           }
 
-          // Layer 3: Einstein Ring - Ultra-sharp light photon sphere
+          // Capa 3: Anillo de Einstein - Esfera de fotones ultra nítida
           ctx.beginPath();
           ctx.arc(projectedX, projectedY, baseSize * 1.08, 0, Math.PI * 2);
           ctx.strokeStyle = `rgba(255, 255, 230, ${fadeOpacity * 0.9})`;
           ctx.lineWidth = 1.2 * scale;
           ctx.stroke();
 
-          // Event Horizon - Dense shadow core
+          // Horizonte de Eventos - Núcleo de sombra denso
           ctx.beginPath();
           ctx.arc(projectedX, projectedY, baseSize, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(5, 5, 10, ${fadeOpacity * 1.8})`;
           ctx.fill();
 
         } else if (this.type === 'quasar') {
-          // HD Quasar - Pulsating Energy
+          // Cuásar HD - Energía Pulsante
           const jetLen = baseSize * 18 * animationPulse;
           const jetGrad = ctx.createLinearGradient(projectedX, projectedY - jetLen, projectedX, projectedY + jetLen);
           jetGrad.addColorStop(0, "rgba(120, 80, 255, 0)");
@@ -219,7 +257,7 @@ export default function AnimatedBackground() {
           ctx.fillStyle = jetGrad;
           ctx.fill();
 
-          // Core Fusion
+          // Núcleo de Fusión
           const coreGrad = ctx.createRadialGradient(projectedX, projectedY, 0, projectedX, projectedY, baseSize * 0.8);
           coreGrad.addColorStop(0, `rgba(255, 255, 255, ${fadeOpacity * 1.5})`);
           coreGrad.addColorStop(1, "rgba(220, 200, 255, 0)");
@@ -229,9 +267,9 @@ export default function AnimatedBackground() {
           ctx.fill();
 
         } else if (this.type === 'star_sun') {
-          // New Star / Sun HD
+          // Estrella / Sol HD
           const sunSize = baseSize * 1.2;
-          // Corona - Turbulent halo
+          // Corona - Halo turbulento
           const coronaPulse = Math.sin(this.pulse * 1.5) * 0.08 + 1;
           const coronaGrad = ctx.createRadialGradient(projectedX, projectedY, sunSize * 0.5 * coronaPulse, projectedX, projectedY, sunSize * 4 * coronaPulse);
           coronaGrad.addColorStop(0, `rgba(255, 250, 200, ${fadeOpacity * 0.5})`);
@@ -242,7 +280,7 @@ export default function AnimatedBackground() {
           ctx.arc(projectedX, projectedY, sunSize * 4 * coronaPulse, 0, Math.PI * 2);
           ctx.fill();
 
-          // Fusion Core - Soft white/gold
+          // Núcleo de Fusión - Blanco/Dorado suave
           const fusionGrad = ctx.createRadialGradient(projectedX, projectedY, 0, projectedX, projectedY, sunSize);
           fusionGrad.addColorStop(0, `rgba(255, 255, 250, ${fadeOpacity * 1.5})`);
           fusionGrad.addColorStop(1, `rgba(255, 220, 100, ${fadeOpacity * 0.2})`);
@@ -252,7 +290,7 @@ export default function AnimatedBackground() {
           ctx.fill();
 
         } else if (this.type === 'nebula') {
-          // HD Nebula - Soft Cloud Gradients
+          // Nebulosa HD - Gradientes de nubes suaves
           const nebSize = baseSize * 22;
           const nebGrad = ctx.createRadialGradient(projectedX, projectedY, 0, projectedX, projectedY, nebSize);
           nebGrad.addColorStop(0, `rgba(80, 120, 255, ${fadeOpacity * 0.06})`);
@@ -286,7 +324,11 @@ export default function AnimatedBackground() {
     }
 
     let animationFrameId: number;
-    function animate() {
+    
+    /**
+     * Función principal de animación.
+     */
+    function animate(): void {
       if (!ctx) return;
       
       // Limpiamos con negro transparente para generar un micro-rastro que suaviza el movimiento
@@ -307,8 +349,8 @@ export default function AnimatedBackground() {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, w, h);
 
-      // Dibujar Anomalías primero para que queden debajo del polvo estelar ligero
-      for (let anomaly of anomalies) {
+      // Dibujar anomalías primero para que queden debajo del polvo estelar ligero
+      for (const anomaly of anomalies) {
         anomaly.update();
         anomaly.draw(centerX, centerY);
       }

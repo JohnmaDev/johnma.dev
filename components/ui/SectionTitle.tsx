@@ -1,14 +1,25 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 
+/**
+ * Propiedades para el componente SectionTitle.
+ */
 interface SectionTitleProps {
+  /** Texto pequeño encima del título. */
   eyebrow?: string;
+  /** Título principal de la sección. */
   title: string;
+  /** Descripción detallada opcional. */
   description?: string;
+  /** Alineación del contenido. */
   align?: "left" | "center";
+  /** Clases CSS adicionales. */
   className?: string;
 }
 
+/**
+ * Componente para mostrar títulos de sección con subtítulo y descripción.
+ */
 export default function SectionTitle({
   eyebrow,
   title,

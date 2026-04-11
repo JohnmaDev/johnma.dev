@@ -1,9 +1,15 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 
+/**
+ * Propiedades para el componente Badge.
+ */
 interface BadgeProps {
+  /** Contenido del badge. */
   children: React.ReactNode;
+  /** Variante visual del badge. */
   variant?: "default" | "muted" | "coming-soon";
+  /** Clases CSS adicionales. */
   className?: string;
 }
 
@@ -16,6 +22,9 @@ const variantStyles = {
     "bg-transparent text-[var(--color-fg-subtle)] border border-dashed border-[var(--color-border)]",
 };
 
+/**
+ * Componente Badge para mostrar etiquetas cortas.
+ */
 export default function Badge({
   children,
   variant = "default",
