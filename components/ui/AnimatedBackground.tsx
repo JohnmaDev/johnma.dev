@@ -184,9 +184,13 @@ const AnimatedBackground = () => {
           }
           return;
         }
+        
         this.z += SPACE_CONFIG.STAR_SPEED;
         this.pulse += 0.03;
-        if (this.z > SPACE_CONFIG.MAX_DEPTH) this.active = false;
+        
+        if (this.z > SPACE_CONFIG.MAX_DEPTH) {
+          this.active = false;
+        }
       }
 
       draw(centerX: number, centerY: number): void {

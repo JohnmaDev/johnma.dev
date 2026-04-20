@@ -28,7 +28,7 @@ export default function HeroContent() {
         <div className="flex flex-col gap-10 items-center animate-fade-in [animation-duration:2000ms]">
           <h1 className="text-5xl sm:text-7xl lg:text-9xl font-bold tracking-tighter text-[var(--color-fg)] opacity-90 blur-[0.3px] min-h-[1.2em]">
             <TypewriterEffect 
-              words={["Johnma.", "Next.js.", "React.", "TypeScript.", "Arquitectura."]} 
+              words={["Johnma.", "Fullstack.", "React.", "Next.js.", "Performance."]} 
               typingSpeed={100}
               deletingSpeed={50}
               delayBetweenWords={2500}
